@@ -1,0 +1,32 @@
+name: Daily Market Feishu Push
+
+on:
+  schedule:
+    # Beijing time 07:30, Monday-Friday. GitHub Actions cron uses UTC.
+    - cron: "30 23 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  push-market-summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Push market summary to Feishu
+        env:
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_SECRET: ${{ secrets.FEISHU_SECRET }}
+          LOG_LEVEL: INFO
+        run: python src/main.py
